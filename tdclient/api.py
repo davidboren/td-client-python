@@ -27,7 +27,7 @@ import ssl
 import tempfile
 import time
 try:
-    import urllib.parse as urlparse # >=3.0
+    import urllib.parse as urlparse  # >=3.0
 except ImportError:
     import urlparse
 import urllib3
@@ -57,6 +57,7 @@ AuthError = errors.AuthError
 ForbiddenError = errors.ForbiddenError
 AlreadyExistsError = errors.AlreadyExistsError
 NotFoundError = errors.NotFoundError
+
 
 class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI, ExportAPI, ImportAPI,
           JobAPI, PartialDeleteAPI, ResultAPI, ScheduleAPI, ServerStatusAPI, TableAPI, UserAPI):
@@ -127,7 +128,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
         self.http = self._init_http(http_proxy if http_proxy else os.getenv("HTTP_PROXY"), **pool_options)
         self._retry_post_requests = retry_post_requests
         self._max_cumul_retry_delay = max_cumul_retry_delay
-        self._headers = dict([ (key.lower(), value) for (key, value) in headers.items() ])
+        self._headers = dict([(key.lower(), value) for (key, value) in headers.items()])
 
     @property
     def apikey(self):
@@ -178,7 +179,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
                     break
                 else:
                     log.warn("Error %d: %s. Retrying after %d seconds... (cumulative: %d/%d)", response.status, response.data, retry_delay, cumul_retry_delay, self._max_cumul_retry_delay)
-            except ( urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error ):
+            except (urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error):
                 pass
 
             if cumul_retry_delay <= self._max_cumul_retry_delay:
@@ -227,7 +228,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
                     if not self._retry_post_requests:
                         raise(APIError("Retrying stopped by retry_post_requests == False"))
                     log.warn("Error %d: %s. Retrying after %d seconds... (cumulative: %d/%d)", response.status, response.data, retry_delay, cumul_retry_delay, self._max_cumul_retry_delay)
-            except ( urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error ):
+            except (urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error):
                 if not self._retry_post_requests:
                     raise(APIError("Retrying stopped by retry_post_requests == False"))
 
@@ -264,11 +265,11 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
             if fileno_supported:
                 stream = bytes_or_stream
             else:
-                stream = array(str("b"), bytes_or_stream.read())
+                stream = bytes(bytes_or_stream.read())
 
         else:
             # send request body as an `array.array` since `httplib` requires the request body to be a unicode string
-            stream = array(str("b"), bytes_or_stream)
+            stream = bytes(bytes_or_stream)
 
         response = None
         try:
@@ -277,7 +278,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
                 pass
             else:
                 raise(APIError("Error %d: %s", response.status, response.data))
-        except ( urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error ):
+        except (urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error):
             raise(APIError("Error: %s" % (repr(response))))
 
         log.debug("REST PUT response:\n  headers: %s\n  status: %d\n  body: <omitted>", repr(dict(response.getheaders())), response.status)
@@ -305,7 +306,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
                     break
                 else:
                     log.warn("Error %d: %s. Retrying after %d seconds... (cumulative: %d/%d)", response.status, response.data, retry_delay, cumul_retry_delay, self._max_cumul_retry_delay)
-            except ( urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error ):
+            except (urllib3.exceptions.TimeoutStateError, urllib3.exceptions.TimeoutError, urllib3.exceptions.PoolError, socket.error):
                 pass
 
             if cumul_retry_delay <= self._max_cumul_retry_delay:
@@ -338,7 +339,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
         _headers["date"] = email.utils.formatdate(time.time())
         _headers["user-agent"] = self._user_agent
         # override given headers
-        _headers.update(dict([ (key.lower(), value) for (key, value) in headers.items() ]))
+        _headers.update(dict([(key.lower(), value) for (key, value) in headers.items()]))
         return (url, _headers)
 
     def send_request(self, method, url, fields=None, body=None, headers=None, **kwargs):
@@ -350,9 +351,9 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
             method = as_bytes(method, 'utf-8')
             url = as_bytes(url, 'utf-8')
             if fields is not None:
-                fields = dict([ (as_bytes(k, 'utf-8'), as_bytes(v, 'utf-8')) for k, v in fields.items() ])
+                fields = dict([(as_bytes(k, 'utf-8'), as_bytes(v, 'utf-8')) for k, v in fields.items()])
             if headers is not None:
-                headers = dict([ (as_bytes(k, 'utf-8'), as_bytes(v, 'utf-8')) for k, v in headers.items() ])
+                headers = dict([(as_bytes(k, 'utf-8'), as_bytes(v, 'utf-8')) for k, v in headers.items()])
         if body is None:
             return self.http.request(method, url, fields=fields, headers=headers, **kwargs)
         else:
@@ -379,8 +380,8 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
         except ValueError as error:
             raise APIError("Unexpected API response: %s: %s" % (error, repr(body)))
         js = dict(js)
-        if 0 < [ k in js for k in required ].count(False):
-            missing = [ k for k in required if k not in js ]
+        if 0 < [k in js for k in required].count(False):
+            missing = [k for k in required if k not in js]
             raise APIError("Unexpected API response: %s: %s" % (repr(missing), repr(body)))
         return js
 
@@ -438,7 +439,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
     def _read_file(self, file_like, fmt, **kwargs):
         compressed = fmt.endswith(".gz")
         if compressed:
-            fmt = fmt[0:len(fmt)-len(".gz")]
+            fmt = fmt[0:len(fmt) - len(".gz")]
         reader_name = "_read_%s_file" % (fmt,)
         if hasattr(self, reader_name):
             reader = getattr(self, reader_name)
@@ -456,7 +457,7 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
             return reader(file_like, **kwargs)
 
     def _validate_record(self, record):
-        if not any (k in record for k in ("time", b"time")):
+        if not any(k in record for k in ("time", b"time")):
             warnings.warn("records should have \"time\" column to import records properly.", category=RuntimeWarning)
         return True
 
@@ -482,9 +483,11 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
             py2k = False
         # `csv` module bundled with py2k doesn't support `unicode` :(
         # https://docs.python.org/2/library/csv.html#examples
+
         def getreader(file_like):
             for s in codecs.getreader(encoding)(file_like):
                 yield s.encode(encoding) if py2k else s
+
         def value(s):
             s = s.decode(encoding) if py2k else s
             try:
@@ -504,24 +507,25 @@ class API(AccessControlAPI, AccountAPI, BulkImportAPI, ConnectorAPI, DatabaseAPI
         if columns is None:
             reader = csv.DictReader(getreader(file_like), dialect=dialect)
             for row in reader:
-                record = dict([ (k, value(v)) for (k, v) in row.items() ])
+                record = dict([(k, value(v)) for (k, v) in row.items()])
                 self._validate_record(record)
                 yield record
         else:
             reader = csv.reader(getreader(file_like), dialect=dialect)
             for row in reader:
-                record = dict(zip(columns, [ value(col) for col in row ]))
+                record = dict(zip(columns, [value(col) for col in row]))
                 self._validate_record(record)
                 yield record
 
     def _read_tsv_file(self, file_like, **kwargs):
         return self._read_csv_file(file_like, dialect=csv.excel_tab, **kwargs)
 
+
 def normalized_msgpack(value):
     if isinstance(value, (list, tuple)):
-        return [ normalized_msgpack(v) for v in value ]
+        return [normalized_msgpack(v) for v in value]
     elif isinstance(value, dict):
-        return dict([ (normalized_msgpack(k), normalized_msgpack(v)) for (k, v) in value.items() ])
+        return dict([(normalized_msgpack(k), normalized_msgpack(v)) for (k, v) in value.items()])
     try:
         long
         py2k = True
@@ -534,7 +538,7 @@ def normalized_msgpack(value):
             return value
     else:
         if isinstance(value, int):
-            if -(1<<63) < value < (1<<64):
+            if -(1 << 63) < value < (1 << 64):
                 return value
             else:
                 return str(value)
